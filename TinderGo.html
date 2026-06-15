@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TinderGo | Analyse de profils</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fafafa;
+        }
+        
+        .bg-tinder { background: linear-gradient(45deg, #fd297b, #ff655b); }
+        .text-tinder {
+            background: linear-gradient(45deg, #fd297b, #ff655b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Radar Animation */
+        .radar-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            border: 2px solid rgba(253, 41, 123, 0.2);
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(253, 41, 123, 0.15);
+        }
+        .radar-sweep {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 50%;
+            background: linear-gradient(45deg, rgba(253, 41, 123, 0) 0%, #fd297b 100%);
+            transform-origin: bottom right;
+            animation: sweep 2s infinite linear;
+        }
+        .radar-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(253, 41, 123, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(253, 41, 123, 0.2) 1px, transparent 1px);
+            background-size: 20px 20px;
+            border-radius: 50%;
+        }
+        @keyframes sweep {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .fade-enter { opacity: 0; transform: translateY(10px); transition: all 0.4s ease-out; }
+        .fade-enter-active { opacity: 1; transform: translateY(0); }
+        .blur-extreme { filter: blur(16px) brightness(0.8); }
+    </style>
+</head>
+<body class="text-gray-800 antialiased relative overflow-x-hidden">
+
+    
+
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute -top-[20%] -right-[10%] w-[70%] h-[70%] rounded-full bg-pink-100 opacity-40 blur-3xl"></div>
+        <div class="absolute top-[40%] -left-[10%] w-[50%] h-[50%] rounded-full bg-orange-50 opacity-40 blur-3xl"></div>
+    </div>
+
+    <header class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="window.scrollTo(0,0)">
+                <svg class="w-8 h-8" viewBox="0 0 24 24" fill="url(#tinderGrad)">
+                    <defs>
+                        <linearGradient id="tinderGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#fd297b" />
+                            <stop offset="100%" stop-color="#ff655b" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M11.66 8.5c-2.5 1.5-3.5 4.5-2 7 1.5 2.5 4.5 3.5 7 2 .5-.3 1-.7 1.4-1.2-1.5-.5-2.8-1.5-3.5-2.8-.8-1.5-.8-3.3.1-4.8-.4.1-.8.2-1.2.2-1.2 0-2.3-.6-3-1.6-.2-.3-.5-.5-.8-.5z" fill="#fd297b"/>
+                </svg>
+                <span class="text-2xl font-black tracking-tight text-gray-900">TinderGo</span>
+            </div>
+            <nav class="hidden md:flex gap-8 text-sm font-bold text-gray-500">
+                <a href="#comment-ca-marche" class="hover:text-pink-500 transition-colors">Comment ça marche ?</a>
+                <a href="#faq" class="hover:text-pink-500 transition-colors">FAQ</a>
+            </nav>
+            <div class="flex items-center gap-4">
+                <button class="bg-tinder text-white text-sm font-bold px-6 py-2.5 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all">
+                    Pass Premium
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-12 md:py-20 grid lg:grid-cols-2 gap-12 items-center">
+        
+        <div class="order-2 lg:order-1 text-center lg:text-left">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-pink-100/50 border border-pink-200 text-pink-600 text-xs font-bold uppercase tracking-wide mb-6">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-pink-500"></span>
+                </span>
+                Moteur IA V4.2 Actif
+            </div>
+            <h1 class="text-5xl md:text-6xl font-extrabold leading-tight text-gray-900 mb-6">
+                Découvrez qui se cache sur les <span class="text-tinder">apps de rencontre.</span>
+            </h1>
+            <p class="text-lg text-gray-500 mb-8 max-w-xl mx-auto lg:mx-0">
+                Notre algorithme scanne plus de 50 millions de profils en temps réel. Entrez les informations de votre cible pour lancer une recherche approfondie.
+            </p>
+            
+            <div class="flex items-center justify-center lg:justify-start gap-8">
+                <div>
+                    <p class="text-3xl font-black text-gray-900">98%</p>
+                    <p class="text-sm font-medium text-gray-500">Taux de précision</p>
+                </div>
+                <div class="w-px h-12 bg-gray-200"></div>
+                <div>
+                    <p class="text-3xl font-black text-gray-900">2M+</p>
+                    <p class="text-sm font-medium text-gray-500">Profils détectés</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-1 lg:order-2 flex justify-center lg:justify-end relative">
+            <div class="glass-card w-full max-w-md rounded-[2.5rem] p-8 relative z-10">
+                
+                <div id="step1" class="fade-enter fade-enter-active">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Lancer une analyse</h2>
+                        <p class="text-sm text-gray-500 mt-1">Fournissez un maximum d'infos pour affiner l'IA.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-gray-700 mb-1 pl-1">1. Photo du visage (Requis)</label>
+                        <div class="relative group cursor-pointer" id="uploadZone">
+                            <input type="file" id="photoInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer">
+                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center bg-white group-hover:bg-pink-50 group-hover:border-[#fd297b] transition-all">
+                                <div id="uploadPlaceholder">
+                                    <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
+                                    <p class="text-sm font-semibold text-gray-700">Appuyez pour sélectionner</p>
+                                </div>
+                                <img id="previewImage" class="hidden w-full h-32 object-cover rounded-lg shadow-sm" src="" alt="Aperçu">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1 pl-1">2. Prénom</label>
+                            <input type="text" id="nameInput" placeholder="Chloé" class="w-full bg-white border border-gray-200 text-gray-900 text-md rounded-xl focus:ring-2 focus:ring-[#fd297b] block p-3 outline-none font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1 pl-1">3. Nom</label>
+                            <input type="text" id="lastNameInput" placeholder="Martin" class="w-full bg-white border border-gray-200 text-gray-900 text-md rounded-xl focus:ring-2 focus:ring-[#fd297b] block p-3 outline-none font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1 pl-1">4. Âge</label>
+                            <input type="number" id="ageInput" placeholder="24" class="w-full bg-white border border-gray-200 text-gray-900 text-md rounded-xl focus:ring-2 focus:ring-[#fd297b] block p-3 outline-none font-medium">
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-1 pl-1">4. Ville / Région</label>
+                        <input type="text" id="cityInput" placeholder="Ex: Paris, Île-de-France" class="w-full bg-white border border-gray-200 text-gray-900 text-md rounded-xl focus:ring-2 focus:ring-[#fd297b] block p-3 outline-none font-medium">
+                    </div>
+
+                    <button onclick="startAnalysis()" class="w-full bg-tinder text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:shadow-[0_10px_25px_rgba(253,41,123,0.3)] hover:-translate-y-1 transition-all flex justify-center items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        Lancer le scan IA
+                    </button>
+                </div>
+
+                <div id="step2" class="hidden flex-col items-center justify-center py-8 fade-enter">
+                    <div class="radar-container mb-8">
+                        <div class="radar-grid"></div>
+                        <div class="radar-sweep"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <img id="radarImage" src="" class="w-16 h-16 rounded-full object-cover border-2 border-white shadow-lg z-10 opacity-80 mix-blend-luminosity" alt="">
+                        </div>
+                    </div>
+
+                    <h2 class="text-xl font-bold text-gray-900 mb-2" id="loadingTitle">Initialisation du scan</h2>
+                    <p id="loadingText" class="text-sm font-medium text-gray-500 h-6">Mise en cache de l'image...</p>
+                    
+                    <div class="w-full bg-gray-200 rounded-full h-2 mt-8 overflow-hidden">
+                        <div class="bg-tinder h-full rounded-full relative" style="width: 0%" id="progressBar">
+                            <div class="absolute top-0 right-0 bottom-0 left-0 bg-white/30 animate-[pulse_1s_ease-in-out_infinite]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="step3" class="hidden fade-enter">
+                    <div class="relative rounded-2xl overflow-hidden shadow-2xl bg-black group">
+                        
+                        <div class="relative h-[420px]">
+                            <img id="resultImage" src="" class="w-full h-full object-cover blur-extreme scale-110" alt="Match">
+                            
+                            <div class="absolute top-4 left-4 right-4 flex justify-between z-20">
+                                <span class="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+                                    <div class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div> Profil Actif
+                                </span>
+                                <span class="bg-black/50 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full">
+                                    Match: 99.8%
+                                </span>
+                            </div>
+
+                            <div class="absolute inset-0 flex flex-col items-center justify-center z-20 p-6">
+                                <div class="bg-white/95 backdrop-blur-xl p-5 rounded-2xl shadow-2xl text-center w-full transform transition-transform hover:scale-105">
+                                    <span class="text-4xl block mb-2">🚨</span>
+                                    <h3 class="text-xl font-black text-gray-900">1 Profil Trouvé</h3>
+                                    <p class="text-sm text-gray-600 mt-1">L'algorithme confirme une correspondance parfaite sur une app de rencontre.</p>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/90 to-transparent z-10"></div>
+                        </div>
+
+                        <div class="absolute bottom-0 left-0 right-0 p-6 z-30 bg-white translate-y-2 rounded-t-3xl">
+                            <div class="flex justify-between items-end mb-4">
+                                <div>
+                                    <h4 class="text-2xl font-black text-gray-900 flex items-center gap-2">
+                                        <span id="resultName">A***</span> 
+                                        <span id="resultAge" class="font-light text-gray-500"></span>
+                                    </h4>
+                                    <p id="resultLocation" class="text-sm text-pink-500 font-bold mt-1">📍 À moins de 5km de...</p>
+                                </div>
+                            </div>
+                            
+                            <button onclick="window.location.href='https://t.trklinkx.com/click?pid=4784&offer_id=12640'" class="w-full bg-tinder text-white font-bold text-lg py-4 rounded-xl shadow-lg flex justify-center items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                Déflouter les photos & pseudo
+                            </button>
+                            <p class="text-center text-[10px] text-gray-400 mt-3 font-semibold uppercase tracking-wider">Abonnement Premium requis</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <section id="comment-ca-marche" class="bg-white py-20 border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-black text-gray-900">Comment Finder fonctionne ?</h2>
+                <p class="text-gray-500 mt-4 max-w-2xl mx-auto">Notre technologie utilise le Deep Learning pour analyser les traits du visage et les recouper avec les bases de données publiques.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-10">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-pink-500">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">1. Upload anonyme</h3>
+                    <p class="text-gray-500">Importez une photo claire du visage. La photo est chiffrée de bout en bout et n'est pas stockée sur nos serveurs.</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-orange-500">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">2. Scan Biométrique</h3>
+                    <p class="text-gray-500">L'IA extrait 128 points faciaux et lance un scan sur des millions de profils d'applications de rencontre.</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-red-500">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">3. Match Sécurisé</h3>
+                    <p class="text-gray-500">Si un profil est trouvé, nous masquons les données. Seul le possesseur d'un Pass Premium peut déverrouiller l'identité.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq" class="bg-gray-50 py-20">
+        <div class="max-w-3xl mx-auto px-6">
+            <h2 class="text-3xl font-black text-gray-900 text-center mb-10">Questions Fréquentes</h2>
+            
+            <div class="space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">La cible est-elle notifiée de ma recherche ?</h3>
+                    <p class="text-gray-600">Non, absolument pas. Notre système effectue des requêtes fantômes (stealth mode) sur les bases de données publiques. La personne analysée ne saura jamais qu'une recherche a été faite sur elle.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">Combien de temps prend l'analyse IA ?</h3>
+                    <p class="text-gray-600">En général, le scan biométrique croisé avec les données géographiques (ville/région) prend entre 10 et 15 secondes selon la charge de nos serveurs de calcul.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">Puis-je voir les photos en clair à la fin ?</h3>
+                    <p class="text-gray-600">Pour des raisons de confidentialité, les résultats initiaux sont floutés. Vous devez posséder un Pass Premium actif pour lever la restriction de sécurité et voir le profil complet.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-900 text-gray-400 py-10 text-center">
+        <div class="max-w-7xl mx-auto px-6">
+            <h3 class="text-xl font-black text-white mb-4">TinderGo</h3>
+            <p class="text-sm mb-6" style="color:#111827;">⚠️ SITE FICTIF (PRANK) - Créé à but humoristique. <br>Aucune donnée n'est traitée, stockée ou revendue. Aucune IA n'est utilisée.</p>
+            <p class="text-xs">© 2026 TinderGo. Tous droits réservés.</p>
+        </div>
+    
+    <div style="text-align:center;color:#9ca3af;font-size:10px;padding:12px 0;background:#111827;">
+        Démonstration technologique • Résultats simulés
+    </div>
+</footer>
+
+    <script>
+        let uploadedImageUrl = '';
+
+        document.getElementById('photoInput').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImageUrl = e.target.result;
+                    document.getElementById('previewImage').src = uploadedImageUrl;
+                    document.getElementById('previewImage').classList.remove('hidden');
+                    document.getElementById('uploadPlaceholder').classList.add('hidden');
+                    document.getElementById('radarImage').src = uploadedImageUrl;
+                    document.getElementById('resultImage').src = uploadedImageUrl;
+                }
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+
+        function startAnalysis() {
+            const name = document.getElementById('nameInput').value.trim();
+            const lastName = document.getElementById('lastNameInput').value.trim();
+            const age = document.getElementById('ageInput').value.trim();
+            const city = document.getElementById('cityInput').value.trim();
+            
+            if(!uploadedImageUrl || !name || !lastName || !age || !city) {
+                alert("Remplis tous les champs (Photo, Prénom, Nom, Âge et Ville) pour que l'IA puisse travailler !");
+                return;
+            }
+
+            // Transition
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            
+            step1.classList.remove('fade-enter-active');
+            setTimeout(() => {
+                step1.classList.add('hidden');
+                step2.classList.remove('hidden');
+                setTimeout(() => step2.classList.add('fade-enter-active'), 50);
+            }, 300);
+
+            // Étapes techniques pour un temps de chargement long (~10 secondes)
+            const steps = [
+                { title: "Extraction biométrique", desc: "Calcul des points de repère faciaux..." },
+                { title: "Nettoyage des métadonnées", desc: "Optimisation de l'image source..." },
+                { title: "Filtrage géographique", desc: `Focus sur le secteur : ${city}...` },
+                { title: "Interrogation des serveurs", desc: "Scan de 50M+ profils en cours..." },
+                { title: "Recherche de correspondances", desc: "Exécution de l'algorithme Tinder..." },
+                { title: "Croisement des données", desc: "Vérification des âges et prénoms..." },
+                { title: "Deep Match", desc: "Confirmation visuelle à 98%..." },
+                { title: "Finalisation", desc: "Génération du rapport et masquage..." }
+            ];
+            
+            let currentStep = 0;
+            let progress = 0;
+            const bar = document.getElementById('progressBar');
+            const titleEl = document.getElementById('loadingTitle');
+            const textEl = document.getElementById('loadingText');
+
+            // Intervalle ralenti pour durer plus longtemps (progress += 0.5 chaque 50ms = 10 secondes)
+            const interval = setInterval(() => {
+                progress += 0.5; 
+                bar.style.width = Math.min(progress, 100) + '%';
+
+                // Change l'étape tous les 12.5% pour utiliser les 8 phrases
+                const stepIndex = Math.floor(progress / 12.5);
+                if (stepIndex < steps.length && stepIndex !== currentStep) {
+                    currentStep = stepIndex;
+                    titleEl.innerText = steps[currentStep].title;
+                    textEl.innerText = steps[currentStep].desc;
+                }
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    showResults(name, age, city);
+                }
+            }, 50); 
+        }
+
+        function showResults(name, age, city) {
+            const step2 = document.getElementById('step2');
+            const step3 = document.getElementById('step3');
+
+            step2.classList.remove('fade-enter-active');
+            setTimeout(() => {
+                step2.classList.add('hidden');
+                step2.classList.remove('flex');
+                
+                // Formater le prénom (1ère lettre + étoiles)
+                const firstLetter = name.charAt(0).toUpperCase();
+                document.getElementById('resultName').innerText = firstLetter + "***";
+                document.getElementById('resultAge').innerText = age;
+                
+                // Formater la ville
+                document.getElementById('resultLocation').innerText = `📍 À moins de 5km de ${city}`;
+                
+                step3.classList.remove('hidden');
+                setTimeout(() => step3.classList.add('fade-enter-active'), 50);
+            }, 300);
+        }
+    </script>
+</body>
+</html>
